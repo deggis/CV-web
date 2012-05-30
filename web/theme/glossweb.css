@@ -1,0 +1,30 @@
+.cm-s-glossweb span.cm-keyword {color: #208;font-weight:bold}
+.cm-s-glossweb span.cm-atom {color: #219;}
+.cm-s-glossweb span.cm-number {color: #a10;}
+.cm-s-glossweb span.cm-def {color: #00f;}
+.cm-s-glossweb span.cm-variable {color: black;}
+.cm-s-glossweb span.cm-variable-2 {color: #38c;}
+.cm-s-glossweb span.cm-variable-3 {color: #0a5;}
+.cm-s-glossweb span.cm-property {color: black;}
+.cm-s-glossweb span.cm-operator {color: black;}
+.cm-s-glossweb span.cm-comment {color: #161;}
+.cm-s-glossweb span.cm-string {color: #660;}
+.cm-s-glossweb span.cm-string-2 {color: #553;}
+.cm-s-glossweb span.cm-meta {color: #555;}
+.cm-s-glossweb span.cm-error {color: #f00;}
+.cm-s-glossweb span.cm-qualifier {color: #666;}
+.cm-s-glossweb span.cm-builtin {color: #30a;}
+.cm-s-glossweb span.cm-bracket {color: #cc7;}
+.cm-s-glossweb span.cm-tag {color: #170;}
+.cm-s-glossweb span.cm-attribute {color: #00c;}
+
+.CodeMirror-matchingbracket    { color: inherit !important;
+                                 outline: solid #ccc 1px }
+.CodeMirror-nonmatchingbracket { color: inherit !important;
+                                 outline: solid #faa 1px }
+
+.CodeMirror { font-family: 'Monaco', 'Menlo', 'Droid Sans Mono', 'Courier New', monospace;
+              font-size: 10pt }
+
+.activeline {background: #ececec !important;}
+
