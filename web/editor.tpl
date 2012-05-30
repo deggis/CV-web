@@ -22,13 +22,11 @@
                 max-height: 100%;
                 }
         </style>
+        <settings />
         <script type="text/javascript" src="codemirror-compressed.js"></script>
         <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
         <defaults/>
-        <script type="text/javascript" src="editor.js"></script>
-        <script type="text/javascript">
-
-        </script>
+        <script type="text/javascript" src="editor.js?v=2"></script>
     </head>
     <body>
         <div style="height: 70px">
@@ -41,6 +39,8 @@
             <div id="editBox" style="position: absolute; top: 0px; bottom: 0px; left: 0px;">
                 <textarea style="width: 100%; height: 100%" id="editor" name="source">Loading...</textarea>
             </div>
+        </div>
+        <div id="imageContainer">
         </div>
         <div style="position: fixed; bottom: 20px; right: 20px">
             <input id="runbutton" type="button" value="Run"  onclick="run()"/>

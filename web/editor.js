@@ -45,12 +45,19 @@ window.onload = function() {
     //stop();
     editor.focus();
 
-    nytPopup = window.open("/viewer");
+
+    if(popup) {
+        console.log("Opening popup viewer.");
+        nytPopup = window.open("/viewerPopup");
+        console.log(nytPopup);
+    }
+    else {
+        console.log("Constructing div viewer.");
+        $("#imageContainer").append("<div id='runBox' style='float: right'><iframe frameborder='0' name='display' src='about:blank' width='525' height='525'></iframe></div>");
+    }
 
     $("body").bind("keydown", keyDown);
-    $(editor).
     console.log("Ready!");
-    console.log(nytPopup);
 };
 
 function run()
@@ -62,8 +69,15 @@ var s = editor.getValue();
         + "; max-age = " + (1000 * 365 * 24 * 60 * 60);
 //    document.getElementById("form").submit();
 //    editor.focus();
+    var nytDiv;
+    if(popup) {
+        nytDiv = nytPopup.document.getElementById("runBox");
+    }
+    else {
+        nytDiv = $("#runBox");
+        console.log(nytDiv);
+    }
 
-    var nytDiv = nytPopup.document.getElementById("runBox");
     $.post("/apiDocSpecs", { source : s }, function(data, status) {
         $(nytDiv).empty();
         $(nytDiv).append("<img src='/apiImage/"+data+"' />");
