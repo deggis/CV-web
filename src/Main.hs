@@ -13,6 +13,7 @@ import Control.Applicative
 import Control.Monad.Trans
 import Snap.Core
 import Snap.Util.FileServe
+import Snap.Util.FileUploads
 import Snap.Http.Server
 import Text.Templating.Heist
 import Text.XmlHtml
@@ -22,6 +23,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as E
 
 import CV.Image
 
@@ -29,16 +31,17 @@ import Source
 
 data App = App { appHeist    :: HeistState Snap
                , sourceImage :: Image GrayScale D32
+               , tempDir     :: FilePath
                , workDir     :: FilePath }
 
 newApp :: HeistState Snap -> IO App
 newApp heist = do
-    tmpDir <- getTemporaryDirectory
-    let workDir = tmpDir++"/"++dirName
+    tempDir <- getTemporaryDirectory
+    let workDir = tempDir++"/"++dirName
     let createParents = False in
         createDirectoryIfMissing createParents workDir
     Just sourceImage <- loadImage (workDir++"/source.jpg") --FIXME: assumed to exist!
-    return (App heist sourceImage workDir)
+    return (App heist sourceImage tempDir workDir)
   where
     dirName = "cvweb" :: FilePath
 
@@ -48,7 +51,8 @@ main = do
     app         <- newApp heist
     quickHttpServe $
         route [ ("editor",         editor app)
-              , ("viewer",         viewer app)
+              , ("upload",         upload app)
+              , ("viewerPopup",         viewerPopup app)
               , ("apiDocSpecs",    apiDocSpecs app)
               , ("apiImage/:hash", apiImage app) ]
         <|> serveDirectory "web"
@@ -64,12 +68,13 @@ editor app = do
     addSplices = bindSplices [
         ("intro", introSplice),
         ("action", actionSplice),
-        ("defaults", defaultsSplice)
+        ("defaults", defaultsSplice),
+        ("settings", settingsSplice)
         ]
     introSplice = return [
         TextNode "Define a variable called ",
-        Element "code" [] [TextNode "picture"],
-        TextNode " describing your picture."
+        Element "code" [] [TextNode "f :: Image GrayScale D32 -> Image GrayScale D32"],
+        TextNode " describing your transformation."
         ]
     actionSplice = return [ TextNode "sendImage" ]
     defaultsSplice = return [ Element "script" [("type", "text/javascript")] [
@@ -78,10 +83,35 @@ editor app = do
         TextNode "import qualified CV.Transforms as T\\n\\n",
         TextNode "f = T.flip T.Vertical';"
         ]]
+    settingsSplice = return [ Element "script" [("type", "text/javascript")] [
+        TextNode "var popup = false;"
+        ]]
 
 
-viewer :: App -> Snap ()
-viewer app = do
+-- | Request's Content-type must be multipart/formdata
+upload :: App -> Snap ()
+upload app@App{..} = do
+    fnames <- handleFileUploads (tempDir++"/") defaultUploadPolicy (\_ -> allowWithMaximumSize 1000000) (uploadHandler app)
+    mapM_ (writeText . T.pack)  fnames
+
+uploadHandler :: App -> [(PartInfo, Either PolicyViolationException FilePath)] -> Snap [FilePath]
+uploadHandler app xs = do
+    j <- mapM (uploadHandler' app) xs
+    -- FIXME: save to ioref tms
+    redirect "/editor"
+
+uploadHandler' :: App -> (PartInfo, Either PolicyViolationException FilePath) -> Snap FilePath
+uploadHandler' App{..} transmission =
+    case (partFileName . fst $ transmission) of
+        Just bfn -> do
+            let Right tfile = snd transmission
+            let fn = T.unpack . E.decodeUtf8 $ bfn
+            liftIO $ copyFile tfile (workDir++"/"++fn)
+            return fn
+        Nothing -> pass
+
+viewerPopup :: App -> Snap ()
+viewerPopup app = do
     Just (b,t) <- renderTemplate
         (appHeist app)
         "viewer"
