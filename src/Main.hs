@@ -17,6 +17,7 @@ import Snap.Http.Server
 import Text.Templating.Heist
 import Text.XmlHtml
 
+import System.Directory
 import Data.ByteString (ByteString)
 import qualified Data.ByteString        as B
 
@@ -27,12 +28,19 @@ import CV.Image
 import Source
 
 data App = App { appHeist    :: HeistState Snap
-               , sourceImage :: Image GrayScale D32 }
+               , sourceImage :: Image GrayScale D32
+               , workDir     :: FilePath }
 
 newApp :: HeistState Snap -> IO App
 newApp heist = do
-    Just sourceImage <- loadImage "/tmp/reckon/source.jpg" --FIXME: assumed to exist!
-    return (App heist sourceImage)
+    tmpDir <- getTemporaryDirectory
+    let workDir = tmpDir++"/"++dirName
+    let createParents = False in
+        createDirectoryIfMissing createParents workDir
+    Just sourceImage <- loadImage (workDir++"/source.jpg") --FIXME: assumed to exist!
+    return (App heist sourceImage workDir)
+  where
+    dirName = "cvweb" :: FilePath
 
 main :: IO ()
 main = do
@@ -87,10 +95,11 @@ apiDocSpecs :: App -> Snap ()
 apiDocSpecs App{..} = do
     src <- getSource
     let hash = "srz" -- FIXME
-    liftIO $ B.writeFile (srcF hash) src
-    (msgs,f) <- liftIO $ compile (srcF hash)
+        srcPath = srcF workDir hash
+    liftIO $ B.writeFile srcPath src
+    (msgs,f) <- liftIO $ compile srcPath
     let res = f <*> Just sourceImage
-        pth = imF hash
+        pth = imF workDir hash
     case res of
         Just x -> do
             liftIO $ saveImage pth x
@@ -100,7 +109,12 @@ apiDocSpecs App{..} = do
 
 apiImage :: App -> Snap ()
 apiImage App{..} = do
-    serveFile $ imF "srz" -- FIXME
+    serveFile $ imF workDir "srz" -- FIXME
 
-srcF hash = "/tmp/reckon/"++hash++".hs"
-imF hash = "/tmp/reckon/"++hash++".png"
+-- FIXME: hash must be sanitized!
+srcF :: FilePath -> String -> FilePath
+srcF workDir hash = workDir++"/"++hash++".hs"
+
+-- FIXME: hash must be sanitized!
+imF :: FilePath -> String -> FilePath
+imF workDir hash = workDir++"/"++hash++".png"
