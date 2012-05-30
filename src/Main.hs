@@ -19,9 +19,9 @@ import Text.XmlHtml
 
 import System.Directory
 import Data.ByteString (ByteString)
-import qualified Data.ByteString        as B
+import qualified Data.ByteString as B
 
-import qualified Data.Text              as T
+import qualified Data.Text as T
 
 import CV.Image
 
