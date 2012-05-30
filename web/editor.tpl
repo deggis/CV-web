@@ -38,7 +38,7 @@
             <hr style="clear:both">
         </div>
         <div style="position: absolute; top: 70px; bottom: 0px; left: 0px; right: 0px">
-            <div id="editBox" style="position: absolute; top: 0px; bottom: 0px; left: 0px; right: 525px">
+            <div id="editBox" style="position: absolute; top: 0px; bottom: 0px; left: 0px;">
                 <textarea style="width: 100%; height: 100%" id="editor" name="source">Loading...</textarea>
             </div>
         </div>
