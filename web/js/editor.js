@@ -53,7 +53,7 @@ window.onload = function() {
     }
     else {
         console.log("Constructing div viewer.");
-        $("#imageContainer").append("<div id='runBox' style='float: right'><iframe frameborder='0' name='display' src='about:blank' width='525' height='525'></iframe></div>");
+        $("#imageContainer").append("<div id='runBox'></div>");
     }
 
     $("body").bind("keydown", keyDown);
@@ -82,12 +82,6 @@ var s = editor.getValue();
         $(nytDiv).empty();
         $(nytDiv).append("<img src='/apiImage/"+data+"' />");
     });
-}
-function stop()
-{
-    document.getElementById("runBox" ).style.display = 'none';
-    document.getElementById("editBox").style.right = '0px';
-    window.display.location.href = "about:blank";
 }
 
 function keyDown(e) {

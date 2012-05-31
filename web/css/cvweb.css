@@ -1,0 +1,39 @@
+
+
+body {
+	background-color: #ccc;
+	font-family: Verdana, Arial, sans-serif;
+}
+
+#body_landing {
+	margin-top: 3em;
+	width: 30em;
+	margin-left: auto;
+	margin-right: auto;
+	background-color: #fff;
+	padding: 1em;
+	border: 1px solid #666;
+}
+
+#logo_landing {
+	width: 10em;
+}
+
+#header_landing {
+	text-align: center;
+}
+
+#form_landing {
+	padding: 1em;
+	margin-top: 1em;
+}
+
+
+.infobox {
+	margin-top: 2em;
+	padding: 0 .7em;
+	font-size: 0.8em;
+}
+
+h1 { font-size: 160%; margin-bottom: 0.0em; }
+h2 { font-size: 100%; margin-top: 0.0em; color: #d49768; }

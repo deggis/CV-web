@@ -1,32 +1,16 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="codemirror.css">
-        <link rel="stylesheet" href="theme/glossweb.css">
-        <style type="text/css">
-            html { height: 100% }
-            body { position: absolute;
-                   left: 2px;
-                   right: 2px;
-                   top: 2px;
-                   bottom: 2px;
-                   margin: 0 0 0 0 }
-            .CodeMirror {
-                border: dotted gray 1px;
-                height: 100%;
-                overflow: auto;
-                max-height: 100%;
-                }
-            .CodeMirror-scroll {
-                height: 100%;
-                max-height: 100%;
-                }
-        </style>
+        <link rel="stylesheet" href="css/codemirror.css">
+        <link rel="stylesheet" href="css/theme/glossweb.css">
+        <link type="text/css" href="css/humanity/jquery-ui-1.8.20.custom.css" rel="stylesheet" />
+        <link type="text/css" href="css/cvweb.css?v=2" rel="stylesheet" />
+        <link type="text/css" href="css/editor.css?v=2" rel="stylesheet" />
         <settings />
-        <script type="text/javascript" src="codemirror-compressed.js"></script>
-        <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="js/codemirror-compressed.js"></script>
+        <script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
         <defaults/>
-        <script type="text/javascript" src="editor.js?v=2"></script>
+        <script type="text/javascript" src="js/editor.js?v=2"></script>
     </head>
     <body>
         <div style="height: 70px">
@@ -35,17 +19,15 @@
             </div>
             <hr style="clear:both">
         </div>
-        <div style="position: absolute; top: 70px; bottom: 0px; left: 0px; right: 0px">
-            <div id="editBox" style="position: absolute; top: 0px; bottom: 0px; left: 0px;">
-                <textarea style="width: 100%; height: 100%" id="editor" name="source">Loading...</textarea>
+        <div id="editor_left">
+            <textarea id="editor" name="source">Loading...</textarea>
+            <div id="editor_buttons">
+                <input id="runbutton" type="button" value="Process"  onclick="run()"/>
             </div>
         </div>
-        <div id="imageContainer">
-        </div>
-        <div style="position: fixed; bottom: 20px; right: 20px">
-            <input id="runbutton" type="button" value="Run"  onclick="run()"/>
-            <input type="button" value="Stop" onclick="stop()"/>
+        <div id="editor_right">
+            <div id="imageContainer">
+            </div>
         </div>
     </body>
 </html>
-

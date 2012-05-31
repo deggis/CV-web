@@ -18,6 +18,9 @@ import Snap.Http.Server
 import Text.Templating.Heist
 import Text.XmlHtml
 
+import Data.IORef
+import qualified Data.Map as M
+
 import System.Directory
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
@@ -25,23 +28,25 @@ import qualified Data.ByteString as B
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 
+
 import CV.Image
 
 import Source
 
+-- FIXME: M.Map as collection never releases memory!
 data App = App { appHeist    :: HeistState Snap
-               , sourceImage :: Image GrayScale D32
                , tempDir     :: FilePath
-               , workDir     :: FilePath }
+               , workDir     :: FilePath
+               , collection  :: IORef M.Map FilePath (Image GrayScale D32) }
 
 newApp :: HeistState Snap -> IO App
-newApp heist = do
+newApp appHeist = do
     tempDir <- getTemporaryDirectory
     let workDir = tempDir++"/"++dirName
     let createParents = False in
         createDirectoryIfMissing createParents workDir
-    Just sourceImage <- loadImage (workDir++"/source.jpg") --FIXME: assumed to exist!
-    return (App heist sourceImage tempDir workDir)
+    collection <- newIORef M.empty
+    return !$ App{..}
   where
     dirName = "cvweb" :: FilePath
 

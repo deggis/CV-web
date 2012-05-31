@@ -1,0 +1,36 @@
+html { height: 100% }
+body { position: absolute;
+       left: 2px;
+       right: 2px;
+       top: 2px;
+       bottom: 2px;
+       margin: 0 0 0 0 }
+.CodeMirror {
+    border: dotted gray 1px;
+    height: 100%;
+    overflow: auto;
+    max-height: 100%;
+    }
+.CodeMirror-scroll {
+    height: 100%;
+    max-height: 100%;
+    }
+
+#editor_left {
+    float: left;
+    position: relative;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    width: 50%;
+    background-color: #fff;
+}
+
+#editor_right {
+    width: 50%;
+    float: right;
+}
+
+#editor {
+    height: 40em;
+}
