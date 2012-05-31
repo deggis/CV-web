@@ -11,6 +11,8 @@ module Main where
 
 import Control.Applicative
 import Control.Monad.Trans
+import Control.Monad.Reader
+import Control.Concurrent.MVar
 import Snap.Core
 import Snap.Util.FileServe
 import Snap.Util.FileUploads
@@ -18,7 +20,6 @@ import Snap.Http.Server
 import Text.Templating.Heist
 import Text.XmlHtml
 
-import Data.IORef
 import qualified Data.Map as M
 
 import System.Directory
@@ -32,12 +33,14 @@ import qualified Data.Text.Encoding as E
 import CV.Image
 
 import Source
+import Heh.CVWeb
+
 
 -- FIXME: M.Map as collection never releases memory!
 data App = App { appHeist    :: HeistState Snap
                , tempDir     :: FilePath
                , workDir     :: FilePath
-               , collection  :: IORef M.Map FilePath (Image GrayScale D32) }
+               , gallery     :: MVar Gallery }
 
 newApp :: HeistState Snap -> IO App
 newApp appHeist = do
@@ -45,8 +48,8 @@ newApp appHeist = do
     let workDir = tempDir++"/"++dirName
     let createParents = False in
         createDirectoryIfMissing createParents workDir
-    collection <- newIORef M.empty
-    return !$ App{..}
+    gallery <- newMVar M.empty
+    return $ App{..}
   where
     dirName = "cvweb" :: FilePath
 
@@ -109,9 +112,10 @@ uploadHandler' :: App -> (PartInfo, Either PolicyViolationException FilePath) ->
 uploadHandler' App{..} transmission =
     case (partFileName . fst $ transmission) of
         Just bfn -> do
-            let Right tfile = snd transmission
+            let Right loc = snd transmission
             let fn = T.unpack . E.decodeUtf8 $ bfn
-            liftIO $ copyFile tfile (workDir++"/"++fn)
+            Just i <- liftIO $ loadImage loc
+            liftIO $ modifyMVar gallery (\m -> return $ (M.insert fn i m, ()))
             return fn
         Nothing -> pass
 
@@ -132,19 +136,23 @@ apiDocSpecs App{..} = do
     let hash = "srz" -- FIXME
         srcPath = srcF workDir hash
     liftIO $ B.writeFile srcPath src
-    (msgs,f) <- liftIO $ compile srcPath
-    let res = f <*> Just sourceImage
-        pth = imF workDir hash
-    case res of
-        Just x -> do
-            liftIO $ saveImage pth x
+    (msgs,compiled) <- liftIO $ compile srcPath
+    liftIO $ mapM_ putStrLn msgs
+    gal <- liftIO $ readMVar gallery
+    case compiled of 
+        Just f -> do
+            let result = runReader f gal
+                pth = imF workDir hash
+            liftIO $ saveImage pth result
             writeText . T.pack $ hash
         Nothing ->
             writeText . T.pack . unlines $ msgs
 
 apiImage :: App -> Snap ()
 apiImage App{..} = do
-    serveFile $ imF workDir "srz" -- FIXME
+    hashBS <- maybe pass return =<< getParam "hash"
+    let hash = T.unpack . E.decodeUtf8 $ hashBS
+    serveFile $ imF workDir hash -- FIXME
 
 -- FIXME: hash must be sanitized!
 srcF :: FilePath -> String -> FilePath

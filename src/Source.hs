@@ -14,8 +14,6 @@ module Source where
 
 import Prelude hiding (catch,span)
 
-import CV.Image
-
 import Data.IORef
 import GHC.Exts (unsafeCoerce#)
 import Control.Exception hiding (handle)
@@ -30,9 +28,7 @@ import qualified HscTypes   as GHC
 import qualified DynFlags   as GHC
 
 import ProtectHandlers
-
-type Im = Image GrayScale D32
-type Func = Im -> Im
+import Heh.CVWeb
 
 type CompileResult = ([String], Maybe Func)
 
@@ -68,7 +64,7 @@ compile fn = doWithErrors $ do
             return (Just (unsafeCoerce# v))
         False -> return Nothing
   where
-    expr = "f :: Image GrayScale D32 -> Image GrayScale D32"
+    expr = "image :: CVWebMonad Im"
 
 {-|
     Runs an action in the 'Ghc' monad, and automatically collects error
