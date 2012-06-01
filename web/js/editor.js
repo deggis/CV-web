@@ -53,7 +53,7 @@ window.onload = function() {
     }
     else {
         console.log("Constructing div viewer.");
-        $("#imageContainer").append("<div id='runBox'></div>");
+        $("#image_container").append("<div id='runBox'></div>");
     }
 
     $("body").bind("keydown", keyDown);

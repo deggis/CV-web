@@ -1,7 +1,7 @@
 
 
 body {
-	background-color: #ccc;
+	background-color: #222129;
 	font-family: Verdana, Arial, sans-serif;
 }
 
@@ -33,6 +33,10 @@ body {
 	margin-top: 2em;
 	padding: 0 .7em;
 	font-size: 0.8em;
+}
+
+.spacer {
+	clear: both;
 }
 
 h1 { font-size: 160%; margin-bottom: 0.0em; }

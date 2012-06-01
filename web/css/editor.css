@@ -1,10 +1,3 @@
-html { height: 100% }
-body { position: absolute;
-       left: 2px;
-       right: 2px;
-       top: 2px;
-       bottom: 2px;
-       margin: 0 0 0 0 }
 .CodeMirror {
     border: dotted gray 1px;
     height: 100%;
@@ -16,19 +9,35 @@ body { position: absolute;
     max-height: 100%;
     }
 
-#editor_left {
-    float: left;
+#editor_body {
+    width: 1000px;
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1em solid #191820;
+    top: 50px;
+}
+
+#editor_code {
+    float: right;
     position: relative;
     bottom: 0px;
     left: 0px;
     right: 0px;
-    width: 50%;
-    background-color: #fff;
+    width: 500px;
+    height: 500px;
+    background-color: #f4eee2;
 }
 
-#editor_right {
-    width: 50%;
-    float: right;
+#editor_image {
+    float: left;
+    width: 500px;
+}
+
+#image_container {
+    border-top: 1px dashed #f4eee2;
+    border-right: 1px dashed #f4eee2;
+    border-bottom: 1px dashed #f4eee2;
 }
 
 #editor {

@@ -13,20 +13,24 @@
         <script type="text/javascript" src="js/editor.js?v=2"></script>
     </head>
     <body>
-        <div style="height: 70px">
-            <div>
-                <intro/>
+        <div id="editor_body" class="ui-corner-all">
+<!--            <div style="height: 70px">
+                <div>
+                    <intro/>
+                </div>
+            </div> -->
+            <div id="editor_image">
+                <div id="image_container">
+                </div>
             </div>
-            <hr style="clear:both">
-        </div>
-        <div id="editor_left">
-            <textarea id="editor" name="source">Loading...</textarea>
-            <div id="editor_buttons">
-                <input id="runbutton" type="button" value="Process"  onclick="run()"/>
+            <div id="editor_code" class="ui-corner-right">
+                <textarea id="editor" name="source">Loading...</textarea>
+                <div id="editor_buttons">
+                    <input id="runbutton" type="button" value="Process"  onclick="run()"/>
+                </div>
             </div>
-        </div>
-        <div id="editor_right">
-            <div id="imageContainer">
+            <div class="spacer">
+              &nbsp;
             </div>
         </div>
     </body>
