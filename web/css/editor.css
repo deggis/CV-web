@@ -1,5 +1,4 @@
 .CodeMirror {
-    border: dotted gray 1px;
     height: 100%;
     overflow: auto;
     max-height: 100%;
@@ -16,6 +15,22 @@
     margin-right: auto;
     border: 1em solid #191820;
     top: 50px;
+}
+
+#editor_header {
+    color: #f4eee2;
+    font-family: serif;
+    font-weight: bold;
+    font-size: 200%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    width: 1000px;
+    position: relative;
+    top: 45px;
+}
+#editor_header h2 {
+    margin-bottom: 0px;
 }
 
 #editor_code {
@@ -35,9 +50,6 @@
 }
 
 #image_container {
-    border-top: 1px dashed #f4eee2;
-    border-right: 1px dashed #f4eee2;
-    border-bottom: 1px dashed #f4eee2;
 }
 
 #editor {

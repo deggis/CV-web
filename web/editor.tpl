@@ -10,9 +10,12 @@
         <script type="text/javascript" src="js/codemirror-compressed.js"></script>
         <script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
         <defaults/>
-        <script type="text/javascript" src="js/editor.js?v=2"></script>
+        <script type="text/javascript" src="js/editor.js?v=3"></script>
     </head>
     <body>
+        <div id="editor_header">
+            <h2 id="code_title">[title]</h2>
+        </div>
         <div id="editor_body" class="ui-corner-all">
 <!--            <div style="height: 70px">
                 <div>

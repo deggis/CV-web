@@ -1,6 +1,11 @@
 var editor;
 var nytPopup;
 
+var demos = [
+    { source: 'pixelwise.hs', title: 'Pixelwise operations'},
+    { source: 'empty.hs', title: 'Dark side of the moon'}
+];
+
 window.onload = function() {
     editor = CodeMirror.fromTextArea(
         document.getElementById("editor"), {
@@ -59,6 +64,15 @@ window.onload = function() {
     $("body").bind("keydown", keyDown);
     console.log("Ready!");
 };
+
+function setDemo(i) {
+    demo = demos[i];
+    $.get("/demos/"+demo["source"], function(data) {
+        editor.setValue(data);
+        $("#code_title").html(demo["title"]);
+        run();
+    });
+}
 
 function run()
 {
