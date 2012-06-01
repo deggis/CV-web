@@ -34,6 +34,7 @@ Executable cv-web
     filepath >= 1.3.0.0,
     containers,
     directory,
+    cryptohash,
     aeson,
     unix,
     ghc >= 7.4.1,

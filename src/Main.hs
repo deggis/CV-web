@@ -25,14 +25,15 @@ import qualified Data.Map as M
 import System.Directory
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8  as BC
+import qualified Data.ByteString.Base64 as B64
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 
-
+import qualified Crypto.Hash.MD5 as C
 import CV.Image
-
-import GHC.Paths
+import qualified CV.Transforms as T
 
 import Source
 import CVWeb
@@ -57,18 +58,15 @@ newApp appHeist = do
 
 main :: IO ()
 main = do
-    liftIO $ putStrLn libdir
-    liftIO $ putStrLn ghc_pkg
-    liftIO $ putStrLn ghc
-    liftIO $ putStrLn docdir
     Right heist <- loadTemplates "web" defaultHeistState
     app         <- newApp heist
     quickHttpServe $
-        route [ ("editor",         editor app)
-              , ("upload",         upload app)
-              , ("viewerPopup",         viewerPopup app)
-              , ("apiDocSpecs",    apiDocSpecs app)
-              , ("apiImage/:hash", apiImage app) ]
+        route [ ("editor",             editor app)
+              , ("upload",             upload app)
+              , ("viewerPopup",        viewerPopup app)
+              , ("apiDocSpecs",        apiDocSpecs app)
+              , ("apiImage/:hash",     apiImage app)
+              , ("apiThumbnail/:hash", apiThumbnail app) ]
         <|> serveDirectory "web"
 
 editor :: App -> Snap ()
@@ -110,8 +108,7 @@ upload app@App{..} = do
 
 uploadHandler :: App -> [(PartInfo, Either PolicyViolationException FilePath)] -> Snap [FilePath]
 uploadHandler app xs = do
-    j <- mapM (uploadHandler' app) xs
-    -- FIXME: save to ioref tms
+    mapM_ (uploadHandler' app) xs
     redirect "/editor"
 
 uploadHandler' :: App -> (PartInfo, Either PolicyViolationException FilePath) -> Snap FilePath
@@ -139,8 +136,8 @@ getSource = maybe pass return =<< getParam "source"
 apiDocSpecs :: App -> Snap ()
 apiDocSpecs App{..} = do
     src <- getSource
-    let hash = "srz" -- FIXME
-        srcPath = srcF workDir hash
+    let fpart = fileNameFromDigest . C.hash $ src
+        srcPath = srcF workDir fpart
     liftIO $ B.writeFile srcPath src
     (msgs,compiled) <- liftIO $ compile srcPath
     liftIO $ mapM_ putStrLn msgs
@@ -148,17 +145,25 @@ apiDocSpecs App{..} = do
     case compiled of 
         Just f -> do
             let result = runReader f gal
-                pth = imF workDir hash
+                pth = imF workDir fpart
             liftIO $ saveImage pth result
-            writeText . T.pack $ hash
+            let tn_pth = imF workDir (fpart++"_tn")
+                tn = T.scaleToSize T.Linear True (70,70) result
+            liftIO $ saveImage tn_pth tn
+            writeText . T.pack $ fpart
         Nothing ->
             writeText . T.pack . unlines $ msgs
 
 apiImage :: App -> Snap ()
-apiImage App{..} = do
-    hashBS <- maybe pass return =<< getParam "hash"
-    let hash = T.unpack . E.decodeUtf8 $ hashBS
-    serveFile $ imF workDir hash -- FIXME
+apiImage = apiImage' ""
+
+apiThumbnail :: App -> Snap ()
+apiThumbnail = apiImage' "_tn"
+
+apiImage' :: String -> App -> Snap ()
+apiImage' postFix App{..} = do
+    hash <- maybe pass (return.sanitizeBS) =<< getParam "hash"
+    serveFile $ imF workDir (hash++postFix) -- FIXME
 
 -- FIXME: hash must be sanitized!
 srcF :: FilePath -> String -> FilePath
@@ -167,3 +172,11 @@ srcF workDir hash = workDir++"/"++hash++".hs"
 -- FIXME: hash must be sanitized!
 imF :: FilePath -> String -> FilePath
 imF workDir hash = workDir++"/"++hash++".png"
+
+fileNameFromDigest :: ByteString -> FilePath
+fileNameFromDigest = sanitizeBS . B64.encode
+
+sanitizeBS :: ByteString -> FilePath
+sanitizeBS = BC.unpack . BC.filter (flip BC.elem $ allowed)
+  where
+    allowed = B.pack $ [65..90] ++ [97..122] ++ [48..57] ++ [45,95]
