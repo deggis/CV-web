@@ -28,7 +28,8 @@ import qualified HscTypes   as GHC
 import qualified DynFlags   as GHC
 
 import ProtectHandlers
-import Heh.CVWeb
+import CVWeb
+import Config
 
 type CompileResult = ([String], Maybe Func)
 
@@ -51,7 +52,7 @@ compile fn = doWithErrors $ do
     let dflags2 = GHC.xopt_unset dflags1 GHC.Opt_MonomorphismRestriction
     let dflags3 = GHC.xopt_set   dflags2 GHC.Opt_MonoLocalBinds
 --    let dflags4 = GHC.dopt_set   dflags3 GHC.Opt_PackageTrust
-    GHC.setSessionDynFlags dflags3
+    _ <- GHC.setSessionDynFlags dflags3
     target <- GHC.guessTarget fn Nothing
     GHC.setTargets [target]
     r <- fmap GHC.succeeded (GHC.load GHC.LoadAllTargets)
@@ -86,7 +87,8 @@ doWithErrors action = do
             $ do
                 dflags <- GHC.getSessionDynFlags
                 GHC.setSessionDynFlags dflags {
-                    GHC.log_action = logAction codeErrors
+                    GHC.log_action = logAction codeErrors,
+                    GHC.extraPkgConfs = extraPkgConfs
                     }
                 action
     logAction errs _ span style msg =

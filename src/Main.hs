@@ -32,8 +32,10 @@ import qualified Data.Text.Encoding as E
 
 import CV.Image
 
+import GHC.Paths
+
 import Source
-import Heh.CVWeb
+import CVWeb
 
 
 -- FIXME: M.Map as collection never releases memory!
@@ -55,6 +57,10 @@ newApp appHeist = do
 
 main :: IO ()
 main = do
+    liftIO $ putStrLn libdir
+    liftIO $ putStrLn ghc_pkg
+    liftIO $ putStrLn ghc
+    liftIO $ putStrLn docdir
     Right heist <- loadTemplates "web" defaultHeistState
     app         <- newApp heist
     quickHttpServe $
