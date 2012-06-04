@@ -4,7 +4,8 @@ var nytPopup;
 var demos = [
     { source: 'pixelwise.hs'},
     { source: 'empty.hs' },
-    { source: 'min.hs' }
+    { source: 'min.hs' },
+    { source: 'get.hs' }
 ];
 
 window.onload = function() {
@@ -94,7 +95,8 @@ function addDemosToGallery() {
 function activateDemo(sourceFn) {
     $.get("/demos/"+sourceFn+"?"+(new Date().getTime()), function(source) {
         editor.setValue(source);
-        $("#code_title").html(sourceFn);
+        $("#code_title").html(sourceFn).effect('pulsate', { 'times' : 1 });
+//        $("#editor_code").effect('pulsate', { 'times' : 1 });
         run();
     });
 }
@@ -121,13 +123,12 @@ function run()
     $.post("/eval", { source : s }, function(data, status) {
         var response = parseResponse(data);
         if (response["status"] == "ok") {
-            console.log("success!");
             $(nytDiv).empty();
             $(nytDiv).append("<img src='/image/"+response["hash"]+"' />");
         }
         else {
             $(nytDiv).empty();
-            console.log("Failed!");
+            $("#editor_body").effect('shake', {}, 80);
             $(nytDiv).append("<pre class='code_errors'>"+response["reason"]+"</pre>");
         }
     });
