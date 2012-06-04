@@ -32,9 +32,12 @@
                     <input id="runbutton" type="button" value="Process"  onclick="run()"/>
                 </div>
             </div>
-            <div class="spacer">
-              &nbsp;
-            </div>
+            <div class="spacer">&nbsp;</div>
         </div>
+
+        <div id="gallery">
+          <div class="spacer">&nbsp;</div>
+        </div>
+
     </body>
 </html>

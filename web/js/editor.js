@@ -2,8 +2,9 @@ var editor;
 var nytPopup;
 
 var demos = [
-    { source: 'pixelwise.hs', title: 'Pixelwise operations'},
-    { source: 'empty.hs', title: 'Dark side of the moon'}
+    { source: 'pixelwise.hs'},
+    { source: 'empty.hs' },
+    { source: 'min.hs' }
 ];
 
 window.onload = function() {
@@ -63,15 +64,40 @@ window.onload = function() {
 
     $("body").bind("keydown", keyDown);
     console.log("Ready!");
+
+    addDemosToGallery();
+
+
 };
+
+function addDemosToGallery() {
+    $(demos).each(function(i) {
+        var demo = demos[i];
+        var sourceFn = demo["source"];
+        var preventCache = "?"+(new Date().getTime());
+        // FATAL: server side breaks with simultaneous attempts.
+        setTimeout(function() {
+            $.get("/demos/"+sourceFn+preventCache, function(source) {
+                $.post("/eval", { source : source }, function(hash, status) {
+                    console.log(hash);
+                    $("#gallery").append("<div class='gallery_image'><a href='javascript:activateDemo(\""+sourceFn+"\")'><img src='/thumbnail/"+hash+"' width='70' height='70' alt='' /></a></div>");
+                });
+            });
+        }, i*1500);
+    });
+}
+
+function activateDemo(sourceFn) {
+    $.get("/demos/"+sourceFn+"?"+(new Date().getTime()), function(data) {
+        editor.setValue(data);
+        $("#code_title").html(sourceFn);
+        run();
+    });
+}
 
 function setDemo(i) {
     demo = demos[i];
-    $.get("/demos/"+demo["source"], function(data) {
-        editor.setValue(data);
-        $("#code_title").html(demo["title"]);
-        run();
-    });
+    activateDemo(demo["source"]);
 }
 
 function run()
