@@ -19,7 +19,7 @@ import Data.IORef
 import GHC.Exts (unsafeCoerce#)
 import Control.Exception hiding (handle)
 
-import qualified GHC        as GHC
+import qualified GHC
 import qualified MonadUtils as GHC
 import qualified GHC.Paths  as GHC
 import qualified Bag        as GHC

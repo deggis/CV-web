@@ -26,6 +26,7 @@ import System.Directory
 import System.Environment
 import System.Exit
 import Data.ByteString (ByteString)
+import Data.Maybe
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8  as BC
 import qualified Data.ByteString.Base64 as B64
@@ -69,9 +70,17 @@ newApp confFile appHeist = do
             putStrLn msgs
             exitFailure
         Right config@Configuration{..} -> do
+            print config
             createDirectoryIfMissing False workDir
             gallery <- newMVar M.empty
-            return $ App{..}
+
+            -- Let's add previously added uploads also.
+            uploads <- getDirectoryContents uploadDir
+            let fileNames = filter (\fn->length fn > 2) uploads
+                paths = map (\f->uploadDir++"/"++f) fileNames
+                comb = zip paths fileNames
+            mapM_ (uncurry $ addToGallery gallery) comb
+            return App{..}
 
 editor :: App -> Snap ()
 editor app = do
@@ -120,14 +129,19 @@ uploadHandler app xs = do
 
 receiveFile :: App -> (PartInfo, Either PolicyViolationException FilePath) -> Snap FilePath
 receiveFile App{..} transmission =
-    case (partFileName . fst $ transmission) of
+    case partFileName . fst $ transmission of
         Just bfn -> do
             let Right loc = snd transmission
             let fn = T.unpack . E.decodeUtf8 $ bfn
-            Just i <- liftIO $ loadImage loc
-            liftIO $ modifyMVar gallery (\m -> return $ (M.insert fn i m, ()))
+            liftIO $ addToGallery gallery loc fn
             return fn
         Nothing -> pass
+
+addToGallery :: MVar Gallery -> FilePath -> FilePath -> IO ()
+addToGallery gallery fullPath fileName = do
+    i' <- liftIO $ loadImage fullPath
+    let i = fromMaybe (error ("File "++fullPath++" did not exist!")) i'
+    modifyMVar gallery (\m -> return (M.insert fileName i m, ()))
 
 viewerPopup :: App -> Snap ()
 viewerPopup app = do
@@ -166,10 +180,12 @@ eval App{..} = do
             writeText . T.pack . unlines $ msgs
 
 -- |Creates a dirty lookup to enable coding without Maybes.
-createLookup :: Gallery -> (FilePath -> Im)
-createLookup gal = \fn -> case M.lookup fn gal of
-                            Just i  -> i
-                            Nothing -> error "Image not found!"
+createLookup :: Gallery -> FilePath -> Im
+createLookup gal fn =
+    case M.lookup fn gal of
+        Just i -> i
+        Nothing -> let files = show $ M.keys gal
+                   in error ("Image "++fn++"not found! Images available: "++files)
 
 -- | Handler for retrieving generated images.
 image :: App -> Snap ()
@@ -198,6 +214,6 @@ fileNameFromDigest :: ByteString -> FilePath
 fileNameFromDigest = sanitizeBS . B64.encode
 
 sanitizeBS :: ByteString -> FilePath
-sanitizeBS = BC.unpack . BC.filter (flip BC.elem $ allowed)
+sanitizeBS = BC.unpack . BC.filter (`BC.elem` allowed)
   where
     allowed = B.pack $ [65..90] ++ [97..122] ++ [48..57] ++ [45,95]

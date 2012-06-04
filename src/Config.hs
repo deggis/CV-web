@@ -29,4 +29,4 @@ readConfig filePath tempDir = runErrorT $ do
     packageConfs <- get cp "PATHS" "packageConf"
     let extraPkgConfs = [packageConfs]
 
-    return $ Configuration{..}
+    return Configuration{..}
