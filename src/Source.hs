@@ -65,7 +65,7 @@ compile fn = doWithErrors $ do
             return (Just (unsafeCoerce# v))
         False -> return Nothing
   where
-    expr = "image :: CVWebMonad Im"
+    expr = "image :: Func"
 
 {-|
     Runs an action in the 'Ghc' monad, and automatically collects error

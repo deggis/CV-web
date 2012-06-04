@@ -134,7 +134,7 @@ viewerPopup app = do
 getSource :: Snap ByteString
 getSource = maybe pass return =<< getParam "source"
 
--- | Handler that evaluates source code, creates the image and
+-- |Handler that evaluates source code, creates the image and
 -- returns URL for the image.
 -- FIXME: containers for success and failure.
 eval :: App -> Snap ()
@@ -148,7 +148,7 @@ eval App{..} = do
     gal <- liftIO $ readMVar gallery
     case compiled of 
         Just f -> do
-            let result = runReader f gal
+            let result = f $ createLookup gal
                 pth = imF workDir fpart
             liftIO $ saveImage pth result
             let tn_pth = imF workDir (fpart++"_tn")
@@ -157,6 +157,12 @@ eval App{..} = do
             writeText . T.pack $ fpart
         Nothing ->
             writeText . T.pack . unlines $ msgs
+
+-- |Creates a dirty lookup to enable coding without Maybes.
+createLookup :: Gallery -> (FilePath -> Im)
+createLookup gal = \fn -> case M.lookup fn gal of
+                            Just i  -> i
+                            Nothing -> error "Image not found!"
 
 -- | Handler for retrieving generated images.
 image :: App -> Snap ()
