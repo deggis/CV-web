@@ -92,9 +92,9 @@ var s = editor.getValue();
         console.log(nytDiv);
     }
 
-    $.post("/apiDocSpecs", { source : s }, function(data, status) {
+    $.post("/eval", { source : s }, function(data, status) {
         $(nytDiv).empty();
-        $(nytDiv).append("<img src='/apiImage/"+data+"' />");
+        $(nytDiv).append("<img src='/image/"+data+"' />");
     });
 }
 

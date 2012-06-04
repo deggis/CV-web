@@ -61,12 +61,12 @@ main = do
     Right heist <- loadTemplates "web" defaultHeistState
     app         <- newApp heist
     quickHttpServe $
-        route [ ("editor",             editor app)
-              , ("upload",             upload app)
-              , ("viewerPopup",        viewerPopup app)
-              , ("apiDocSpecs",        apiDocSpecs app)
-              , ("apiImage/:hash",     apiImage app)
-              , ("apiThumbnail/:hash", apiThumbnail app) ]
+        route [ ("editor",          editor app)
+              , ("upload",          upload app)
+              , ("viewerPopup",     viewerPopup app)
+              , ("eval",            eval app)
+              , ("image/:hash",     image app)
+              , ("thumbnail/:hash", thumbnail app) ]
         <|> serveDirectory "web"
 
 editor :: App -> Snap ()
@@ -100,7 +100,8 @@ editor app = do
         ]]
 
 
--- | Request's Content-type must be multipart/formdata
+-- |Handler for receiving sent images.
+-- Request's Content-type must be multipart/formdata
 upload :: App -> Snap ()
 upload app@App{..} = do
     fnames <- handleFileUploads (tempDir++"/") defaultUploadPolicy (\_ -> allowWithMaximumSize 1000000) (uploadHandler app)
@@ -108,11 +109,11 @@ upload app@App{..} = do
 
 uploadHandler :: App -> [(PartInfo, Either PolicyViolationException FilePath)] -> Snap [FilePath]
 uploadHandler app xs = do
-    mapM_ (uploadHandler' app) xs
+    mapM_ (receiveFile app) xs
     redirect "/editor"
 
-uploadHandler' :: App -> (PartInfo, Either PolicyViolationException FilePath) -> Snap FilePath
-uploadHandler' App{..} transmission =
+receiveFile :: App -> (PartInfo, Either PolicyViolationException FilePath) -> Snap FilePath
+receiveFile App{..} transmission =
     case (partFileName . fst $ transmission) of
         Just bfn -> do
             let Right loc = snd transmission
@@ -133,8 +134,11 @@ viewerPopup app = do
 getSource :: Snap ByteString
 getSource = maybe pass return =<< getParam "source"
 
-apiDocSpecs :: App -> Snap ()
-apiDocSpecs App{..} = do
+-- | Handler that evaluates source code, creates the image and
+-- returns URL for the image.
+-- FIXME: containers for success and failure.
+eval :: App -> Snap ()
+eval App{..} = do
     src <- getSource
     let fpart = fileNameFromDigest . C.hash $ src
         srcPath = srcF workDir fpart
@@ -154,14 +158,16 @@ apiDocSpecs App{..} = do
         Nothing ->
             writeText . T.pack . unlines $ msgs
 
-apiImage :: App -> Snap ()
-apiImage = apiImage' ""
+-- | Handler for retrieving generated images.
+image :: App -> Snap ()
+image = image' ""
 
-apiThumbnail :: App -> Snap ()
-apiThumbnail = apiImage' "_tn"
+-- | Handler for retrieving thumbnails of generated images.
+thumbnail :: App -> Snap ()
+thumbnail = image' "_tn"
 
-apiImage' :: String -> App -> Snap ()
-apiImage' postFix App{..} = do
+image' :: String -> App -> Snap ()
+image' postFix App{..} = do
     hash <- maybe pass (return.sanitizeBS) =<< getParam "hash"
     serveFile $ imF workDir (hash++postFix) -- FIXME
 
