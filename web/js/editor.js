@@ -5,7 +5,8 @@ var demos = [
     { source: 'pixelwise.hs'},
     { source: 'empty.hs' },
     { source: 'min.hs' },
-    { source: 'get.hs' }
+    { source: 'get.hs' },
+    { source: 'lena_misc.hs' }
 ];
 
 window.onload = function() {
