@@ -29,6 +29,55 @@
     position: relative;
     top: 45px;
 }
+
+#editor_header #cv {
+    position: absolute;
+    right: 6em;
+    top: 0em;
+    height: 20px;
+    z-index: 100;
+}
+
+
+#editor_header #cv_docs {
+    position: absolute;
+    right: 3em;
+    top: 0em;
+    height: 20px;
+    z-index: 100;
+}
+
+#cv_docs a {
+}
+
+#cv_docs h2 {
+    margin: 0em;
+    padding: 0em;
+}
+
+#cv_docs h3 {
+    margin-bottom: 0em;
+    margin-top: -0.4em;
+    padding: 0em;
+    font-size: 58%;
+}
+
+#editor_header a { color: #D49768; text-decoration: none; }
+
+
+#editor_header #github_logo {
+    position: absolute;
+    right: 0px;
+    top: -0.2em;
+    height: 20px;
+    z-index: 100;
+}
+
+#github_logo img {
+    border: none;
+    height: 2em;
+}
+
 #editor_header h2 {
     margin-bottom: 0px;
 }

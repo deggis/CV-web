@@ -15,6 +15,22 @@
     <body>
         <div id="editor_header">
             <h2 id="code_title">[title]</h2>
+            <div id="github_logo">
+                <a href="https://github.com/deggis/CV-web">
+                    <img src='/images/github_octocat.png' />
+                </a>
+            </div>
+            <div id="cv">
+                <a href="http://aleator.github.com/CV/">
+                    <h2>CV</h2>
+                </a>
+            </div>
+            <div id="cv_docs">
+                <a href="http://aleator.github.com/CV/dist/doc/html/CV/index.html">
+                    <h2>CV</h2>
+                    <h3>DOCS</h3>
+                </a>
+            </div>
         </div>
         <div id="editor_body" class="ui-corner-all">
             <div id="editor_image">
