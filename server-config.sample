@@ -1,7 +1,7 @@
 [PATHS]
-uploaddir =
-workdir =
-packageconf =
+uploaddir = Full path, ./web/uploads can be used.
+workdir = /tmp/cvweb/
+packageconf = Full path to your package conf, ending "../packages-7.4.1.conf/"
 
 [GENERAL]
 thumbnailsize = 70
