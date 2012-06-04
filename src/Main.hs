@@ -27,7 +27,11 @@ import System.Environment
 import System.Exit
 import Data.ByteString (ByteString)
 import Data.Maybe
+
+import qualified Data.Aeson.Encode as JSON
+
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8  as BC
 import qualified Data.ByteString.Base64 as B64
 
@@ -175,9 +179,12 @@ eval App{..} = do
             let tn_pth = imF workDir (fpart++"_tn")
                 tn = T.scaleToSize T.Linear True (70,70) result
             liftIO $ saveImage tn_pth tn
-            writeText . T.pack $ fpart
+            writeJSON [("status","ok"),("hash",fpart)]
         Nothing ->
-            writeText . T.pack . unlines $ msgs
+            writeJSON [("status","failure"),("reason",unlines msgs)]
+
+writeJSON :: [(String,String)] -> Snap ()
+writeJSON = writeBS . B.concat . BL.toChunks . JSON.encode . M.fromList
 
 -- |Creates a dirty lookup to enable coding without Maybes.
 createLookup :: Gallery -> FilePath -> Im

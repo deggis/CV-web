@@ -67,7 +67,6 @@ window.onload = function() {
 
     addDemosToGallery();
 
-
 };
 
 function addDemosToGallery() {
@@ -78,9 +77,14 @@ function addDemosToGallery() {
         // FATAL: server side breaks with simultaneous attempts.
         setTimeout(function() {
             $.get("/demos/"+sourceFn+preventCache, function(source) {
-                $.post("/eval", { source : source }, function(hash, status) {
-                    console.log(hash);
-                    $("#gallery").append("<div class='gallery_image'><a href='javascript:activateDemo(\""+sourceFn+"\")'><img src='/thumbnail/"+hash+"' width='70' height='70' alt='' /></a></div>");
+                $.post("/eval", { source : source }, function(data, status) {
+                    var response = parseResponse(data);
+                    if (response["status"] == "ok") {
+                        $("#gallery").append("<div class='gallery_image'><a href='javascript:activateDemo(\""+sourceFn+"\")'><img src='/thumbnail/"+response["hash"]+"' width='70' height='70' alt='' /></a></div>");
+                    }
+                    else {
+                        console.log("Rendering a demo has failed! Reason: "+response["reason"]);
+                    }
                 });
             });
         }, i*1500);
@@ -88,8 +92,8 @@ function addDemosToGallery() {
 }
 
 function activateDemo(sourceFn) {
-    $.get("/demos/"+sourceFn+"?"+(new Date().getTime()), function(data) {
-        editor.setValue(data);
+    $.get("/demos/"+sourceFn+"?"+(new Date().getTime()), function(source) {
+        editor.setValue(source);
         $("#code_title").html(sourceFn);
         run();
     });
@@ -102,13 +106,9 @@ function setDemo(i) {
 
 function run()
 {
-//    document.getElementById("editBox").style.right = '525px';
-//    document.getElementById("runBox" ).style.display = 'block';
-var s = editor.getValue();
+    var s = editor.getValue();
     document.cookie = sourceCookie + "=" + encodeURIComponent(s)
         + "; max-age = " + (1000 * 365 * 24 * 60 * 60);
-//    document.getElementById("form").submit();
-//    editor.focus();
     var nytDiv;
     if(popup) {
         nytDiv = nytPopup.document.getElementById("runBox");
@@ -119,9 +119,22 @@ var s = editor.getValue();
     }
 
     $.post("/eval", { source : s }, function(data, status) {
-        $(nytDiv).empty();
-        $(nytDiv).append("<img src='/image/"+data+"' />");
+        var response = parseResponse(data);
+        if (response["status"] == "ok") {
+            console.log("success!");
+            $(nytDiv).empty();
+            $(nytDiv).append("<img src='/image/"+response["hash"]+"' />");
+        }
+        else {
+            $(nytDiv).empty();
+            console.log("Failed!");
+            $(nytDiv).append("<pre class='code_errors'>"+response["reason"]+"</pre>");
+        }
     });
+}
+
+function parseResponse(data) {
+    return eval("["+data+"]")[0]; // FIXME: why doesn't work without array
 }
 
 function keyDown(e) {

@@ -17,11 +17,6 @@
             <h2 id="code_title">[title]</h2>
         </div>
         <div id="editor_body" class="ui-corner-all">
-<!--            <div style="height: 70px">
-                <div>
-                    <intro/>
-                </div>
-            </div> -->
             <div id="editor_image">
                 <div id="image_container">
                 </div>
