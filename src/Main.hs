@@ -160,28 +160,32 @@ getSource = maybe pass return =<< getParam "source"
 
 -- |Handler that evaluates source code, creates the image and
 -- returns URL for the image.
--- FIXME: containers for success and failure.
+-- FIXME: code getting laddery
 eval :: App -> Snap ()
 eval App{..} = do
     src <- getSource
     let fpart = fileNameFromDigest . C.hash $ src
         Configuration{..} = config
-        srcPath = srcF workDir fpart
-    liftIO $ B.writeFile srcPath src
-    (msgs,compiled) <- liftIO $ compile config srcPath
-    liftIO $ mapM_ putStrLn msgs
-    gal <- liftIO $ readMVar gallery
-    case compiled of 
-        Just f -> do
-            let result = f $ createLookup gal
-                pth = imF workDir fpart
-            liftIO $ saveImage pth result
-            let tn_pth = imF workDir (fpart++"_tn")
-                tn = T.scaleToSize T.Linear True (70,70) result
-            liftIO $ saveImage tn_pth tn
-            writeJSON [("status","ok"),("hash",fpart)]
-        Nothing ->
-            writeJSON [("status","failure"),("reason",unlines msgs)]
+        pth = imF workDir fpart
+    exists <- liftIO $ doesFileExist pth
+    if exists
+        then writeJSON [("status","ok"),("hash",fpart)]
+        else do
+            let srcPath = srcF workDir fpart
+            liftIO $ B.writeFile srcPath src
+            (msgs,compiled) <- liftIO $ compile config srcPath
+            liftIO $ mapM_ putStrLn msgs
+            gal <- liftIO $ readMVar gallery
+            case compiled of 
+                Just f -> do
+                    let result = f $ createLookup gal
+                    liftIO $ saveImage pth result
+                    let tn_pth = imF workDir (fpart++"_tn")
+                        tn = T.scaleToSize T.Linear True (70,70) result
+                    liftIO $ saveImage tn_pth tn
+                    writeJSON [("status","ok"),("hash",fpart)]
+                Nothing ->
+                    writeJSON [("status","failure"),("reason",unlines msgs)]
 
 writeJSON :: [(String,String)] -> Snap ()
 writeJSON = writeBS . B.concat . BL.toChunks . JSON.encode . M.fromList
