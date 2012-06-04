@@ -37,6 +37,7 @@ body {
 
 .spacer {
 	clear: both;
+	height: 0px;
 }
 
 h1 { font-size: 160%; margin-bottom: 0.0em; }

@@ -47,6 +47,16 @@
     z-index: 100;
 }
 
+#editor_buttons {
+    position: relative;
+}
+
+#runlink {
+    right: -2em;
+    position: absolute;
+    top: -1.4em;
+}
+
 #cv_docs a {
 }
 

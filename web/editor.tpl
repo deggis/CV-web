@@ -41,7 +41,7 @@
             <div id="editor_code" class="ui-corner-right">
                 <textarea id="editor" name="source">Loading...</textarea>
                 <div id="editor_buttons">
-                    <input id="runbutton" type="button" value="Process"  onclick="run()"/>
+                    <a href="javascript:run()" id="runlink">Evaluate!</a>
                 </div>
             </div>
             <div class="spacer">&nbsp;</div>

@@ -65,6 +65,7 @@ window.onload = function() {
     }
 
     $("body").bind("keydown", keyDown);
+    $("#runlink").button();
     console.log("Ready!");
 
     addDemosToGallery();
