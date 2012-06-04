@@ -45,15 +45,15 @@ compile config fn = doWithErrors config $ do
     let dflags1 = dflags {
         GHC.ghcMode = GHC.CompManager,
         GHC.ghcLink = GHC.LinkInMemory,
-        GHC.hscTarget = GHC.HscInterpreted
---      GHC.safeHaskell = GHC.Sf_Safe,
---      GHC.packageFlags = [GHC.TrustPackage  "CV",
---                          GHC.TrustPackage "base"]
+        GHC.hscTarget = GHC.HscInterpreted,
+        GHC.safeHaskell = GHC.Sf_Safe,
+        GHC.packageFlags = [GHC.TrustPackage  "CV",
+                            GHC.TrustPackage "base"]
         }
     let dflags2 = GHC.xopt_unset dflags1 GHC.Opt_MonomorphismRestriction
     let dflags3 = GHC.xopt_set   dflags2 GHC.Opt_MonoLocalBinds
---    let dflags4 = GHC.dopt_set   dflags3 GHC.Opt_PackageTrust
-    _ <- GHC.setSessionDynFlags dflags3
+    let dflags4 = GHC.dopt_set   dflags3 GHC.Opt_PackageTrust
+    _ <- GHC.setSessionDynFlags dflags4
     target <- GHC.guessTarget fn Nothing
     GHC.setTargets [target]
     r <- fmap GHC.succeeded (GHC.load GHC.LoadAllTargets)
