@@ -38,7 +38,9 @@ Executable cv-web
     aeson,
     unix,
     ghc >= 7.4.1,
-    ghc-paths
+    ghc-paths,
+    MissingH,
+    ConfigFile
 
   ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
 

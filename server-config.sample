@@ -1,0 +1,7 @@
+[PATHS]
+uploaddir =
+workdir =
+packageconf =
+
+[GENERAL]
+thumbnailsize = 70

@@ -3,6 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TupleSections       #-}
 {-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE RecordWildCards     #-}
 
 {-|
     This module contains functions for compiling
@@ -38,8 +39,8 @@ type CompileResult = ([String], Maybe Func)
     with the given type.  If the type passed in doesn't match the way the
     result is used, the server process will likely segfault.
 -}
-compile :: FilePath -> IO CompileResult
-compile fn = doWithErrors $ do
+compile :: Configuration -> FilePath -> IO CompileResult
+compile config fn = doWithErrors config $ do
     dflags <- GHC.getSessionDynFlags
     let dflags1 = dflags {
         GHC.ghcMode = GHC.CompManager,
@@ -73,8 +74,8 @@ compile fn = doWithErrors $ do
     it's a bit of tricky trial-and-error to handle them all uniformly, so
     this function abstracts that.
 -}
-doWithErrors :: GHC.Ghc (Maybe Func) -> IO CompileResult
-doWithErrors action = do
+doWithErrors :: Configuration -> GHC.Ghc (Maybe Func) -> IO CompileResult
+doWithErrors Configuration{..} action = do
     codeErrors <- newIORef []
     protectHandlers $ catch (wrapper codeErrors) $ \ (_ :: SomeException) -> do
         errs <- readIORef codeErrors

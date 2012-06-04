@@ -1,8 +1,6 @@
 module CVWeb where
 
 import qualified Data.Map as M
-import Control.Monad.Reader
-import Data.Maybe
 import CV.Image
 
 type Im = Image GrayScale D32

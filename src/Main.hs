@@ -23,6 +23,8 @@ import Text.XmlHtml
 import qualified Data.Map as M
 
 import System.Directory
+import System.Environment
+import System.Exit
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8  as BC
@@ -37,29 +39,19 @@ import qualified CV.Transforms as T
 
 import Source
 import CVWeb
+import Config
 
-
--- FIXME: M.Map as collection never releases memory!
 data App = App { appHeist    :: HeistState Snap
-               , tempDir     :: FilePath
-               , workDir     :: FilePath
-               , gallery     :: MVar Gallery }
-
-newApp :: HeistState Snap -> IO App
-newApp appHeist = do
-    tempDir <- getTemporaryDirectory
-    let workDir = tempDir++"/"++dirName
-    let createParents = False in
-        createDirectoryIfMissing createParents workDir
-    gallery <- newMVar M.empty
-    return $ App{..}
-  where
-    dirName = "cvweb" :: FilePath
+               , gallery     :: MVar Gallery
+               , config      :: Configuration }
 
 main :: IO ()
 main = do
+    args <- getArgs
+    when (length args /= 1) (putStrLn "USAGE: ./cv-web CONF_FILE!" >> exitFailure)
+
     Right heist <- loadTemplates "web" defaultHeistState
-    app         <- newApp heist
+    app         <- newApp (head args) heist
     quickHttpServe $
         route [ ("editor",          editor app)
               , ("upload",          upload app)
@@ -68,6 +60,18 @@ main = do
               , ("image/:hash",     image app)
               , ("thumbnail/:hash", thumbnail app) ]
         <|> serveDirectory "web"
+
+newApp :: FilePath -> HeistState Snap -> IO App
+newApp confFile appHeist = do
+    conf' <- getTemporaryDirectory >>= \fp -> readConfig confFile fp
+    case conf' of
+        Left (_,msgs) -> do
+            putStrLn msgs
+            exitFailure
+        Right config@Configuration{..} -> do
+            createDirectoryIfMissing False workDir
+            gallery <- newMVar M.empty
+            return $ App{..}
 
 editor :: App -> Snap ()
 editor app = do
@@ -106,6 +110,8 @@ upload :: App -> Snap ()
 upload app@App{..} = do
     fnames <- handleFileUploads (tempDir++"/") defaultUploadPolicy (\_ -> allowWithMaximumSize 1000000) (uploadHandler app)
     mapM_ (writeText . T.pack)  fnames
+  where
+    Configuration{..} = config
 
 uploadHandler :: App -> [(PartInfo, Either PolicyViolationException FilePath)] -> Snap [FilePath]
 uploadHandler app xs = do
@@ -141,9 +147,10 @@ eval :: App -> Snap ()
 eval App{..} = do
     src <- getSource
     let fpart = fileNameFromDigest . C.hash $ src
+        Configuration{..} = config
         srcPath = srcF workDir fpart
     liftIO $ B.writeFile srcPath src
-    (msgs,compiled) <- liftIO $ compile srcPath
+    (msgs,compiled) <- liftIO $ compile config srcPath
     liftIO $ mapM_ putStrLn msgs
     gal <- liftIO $ readMVar gallery
     case compiled of 
@@ -176,6 +183,8 @@ image' :: String -> App -> Snap ()
 image' postFix App{..} = do
     hash <- maybe pass (return.sanitizeBS) =<< getParam "hash"
     serveFile $ imF workDir (hash++postFix) -- FIXME
+  where
+    Configuration{..} = config
 
 -- FIXME: hash must be sanitized!
 srcF :: FilePath -> String -> FilePath
