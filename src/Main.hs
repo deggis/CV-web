@@ -48,7 +48,8 @@ import Config
 
 data App = App { appHeist    :: HeistState Snap
                , gallery     :: MVar Gallery
-               , config      :: Configuration }
+               , config      :: Configuration
+               , compileLock :: CompileLock }
 
 main :: IO ()
 main = do
@@ -84,6 +85,7 @@ newApp confFile appHeist = do
                 paths = map (\f->uploadDir++"/"++f) fileNames
                 comb = zip paths fileNames
             mapM_ (uncurry $ addToGallery gallery) comb
+            compileLock <- newCompileLock
             return App{..}
 
 editor :: App -> Snap ()
@@ -173,7 +175,9 @@ eval App{..} = do
         else do
             let srcPath = srcF workDir fpart
             liftIO $ B.writeFile srcPath src
-            (msgs,compiled) <- liftIO $ compile config srcPath
+            -- |Limit compiling not to be done in parallel for now
+            -- to avoid linker errors.
+            (msgs,compiled) <- liftIO . withLock compileLock $ compile config srcPath
             liftIO $ mapM_ putStrLn msgs
             gal <- liftIO $ readMVar gallery
             case compiled of 

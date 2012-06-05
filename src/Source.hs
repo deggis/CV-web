@@ -19,6 +19,8 @@ import Data.IORef
 import GHC.Exts (unsafeCoerce#)
 import Control.Exception hiding (handle)
 
+import Control.Concurrent.MVar
+
 import qualified GHC
 import qualified MonadUtils as GHC
 import qualified GHC.Paths  as GHC
@@ -33,6 +35,16 @@ import CVWeb
 import Config
 
 type CompileResult = ([String], Maybe Func)
+
+-- |As a temporary solution, limit compiling operations not to be
+-- done in parallel in different requests.
+type CompileLock = MVar ()
+
+newCompileLock :: IO CompileLock
+newCompileLock = newMVar ()
+
+withLock :: CompileLock -> IO a -> IO a
+withLock x = withMVar x . const
 
 {-|
     Compile the module in the given file name, and return the named value

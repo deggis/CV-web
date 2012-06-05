@@ -77,20 +77,17 @@ function addDemosToGallery() {
         var demo = demos[i];
         var sourceFn = demo["source"];
         var preventCache = "?"+(new Date().getTime());
-        // FATAL: server side breaks with simultaneous attempts.
-        setTimeout(function() {
-            $.get("/demos/"+sourceFn+preventCache, function(source) {
-                $.post("/eval", { source : source }, function(data, status) {
-                    var response = parseResponse(data);
-                    if (response["status"] == "ok") {
-                        $("#gallery").append("<div class='gallery_image'><a href='javascript:activateDemo(\""+sourceFn+"\")'><img src='/thumbnail/"+response["hash"]+"' width='70' height='70' alt='' /></a></div>");
-                    }
-                    else {
+        $.get("/demos/"+sourceFn+preventCache, function(source) {
+            $.post("/eval", { source : source }, function(data, status) {
+                var response = parseResponse(data);
+                if (response["status"] == "ok") {
+                    $("#gallery").append("<div class='gallery_image'><a href='javascript:activateDemo(\""+sourceFn+"\")'><img src='/thumbnail/"+response["hash"]+"' width='70' height='70' alt='' /></a></div>");
+                }
+                else {
 //                        console.log("Rendering a demo has failed! Reason: "+response["reason"]);
-                    }
-                });
+                }
             });
-        }, i*1500);
+        });
     });
 }
 
