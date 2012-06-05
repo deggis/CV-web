@@ -55,9 +55,9 @@ window.onload = function() {
 
 
     if(popup) {
-        console.log("Opening popup viewer.");
+//        console.log("Opening popup viewer.");
         nytPopup = window.open("/viewerPopup");
-        console.log(nytPopup);
+//        console.log(nytPopup);
     }
     else {
         console.log("Constructing div viewer.");
@@ -66,7 +66,7 @@ window.onload = function() {
 
     $("body").bind("keydown", keyDown);
     $("#runlink").button();
-    console.log("Ready!");
+//    console.log("Ready!");
 
     addDemosToGallery();
 
@@ -86,7 +86,7 @@ function addDemosToGallery() {
                         $("#gallery").append("<div class='gallery_image'><a href='javascript:activateDemo(\""+sourceFn+"\")'><img src='/thumbnail/"+response["hash"]+"' width='70' height='70' alt='' /></a></div>");
                     }
                     else {
-                        console.log("Rendering a demo has failed! Reason: "+response["reason"]);
+//                        console.log("Rendering a demo has failed! Reason: "+response["reason"]);
                     }
                 });
             });
@@ -97,9 +97,15 @@ function addDemosToGallery() {
 function activateDemo(sourceFn) {
     $.get("/demos/"+sourceFn+"?"+(new Date().getTime()), function(source) {
         editor.setValue(source);
-        $("#code_title").html(sourceFn).effect('pulsate', { 'times' : 1 });
-//        $("#editor_code").effect('pulsate', { 'times' : 1 });
-        run();
+
+        $("#code_title").fadeOut(300, function() {
+            $(this).html(sourceFn).fadeIn();
+        });
+        $("#editor_body").fadeOut(300, function() {
+            run();
+            $("#editor_body").fadeIn();
+        });
+
     });
 }
 
@@ -119,7 +125,7 @@ function run()
     }
     else {
         nytDiv = $("#runBox");
-        console.log(nytDiv);
+//        console.log(nytDiv);
     }
 
     $.post("/eval", { source : s }, function(data, status) {
